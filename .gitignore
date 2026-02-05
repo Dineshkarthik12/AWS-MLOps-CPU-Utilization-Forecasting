@@ -1,0 +1,8 @@
+mlops_env/
+__pycache__/
+*.pem
+*.env
+*.log
+snap/
+known_hosts
+known_hosts.old
