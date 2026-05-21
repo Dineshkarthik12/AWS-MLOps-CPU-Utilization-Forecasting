@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/upload/:path*",
+      "destination": "http://13.200.172.98:8000/:path*"
+    },
+    {
+      "source": "/api/forecast/:path*",
+      "destination": "http://13.200.172.98:9000/:path*"
+    }
+  ]
+}

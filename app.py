@@ -3,7 +3,7 @@ import boto3
 
 app = FastAPI()
 
-BUCKET_NAME = "power-forecast-dinesh"  # change this
+BUCKET_NAME = "power-forecast-dinesh"
 
 s3 = boto3.client("s3")
 

@@ -9,7 +9,7 @@ import os
 
 app = FastAPI()
 
-BUCKET_NAME = "power-forecast-dinesh"   # <-- your bucket
+BUCKET_NAME = "power-forecast-dinesh"
 
 s3 = boto3.client("s3")
 
