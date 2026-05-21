@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power Forecast — MLOps Pipeline</title>
-    <meta name="description" content="Cloud-based MLOps system for electricity consumption forecasting. Upload datasets and get next-day power predictions.">
+    <title>CPU Forecast — MLOps Pipeline</title>
+    <meta name="description" content="Cloud-based MLOps system for CPU utilization forecasting. Upload datasets and get next-day CPU utilization predictions.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
                         <rect x="20" y="2" width="6" height="24" rx="1" fill="currentColor"/>
                     </svg>
                 </div>
-                <span class="logo-text">Power<span class="logo-accent">Forecast</span></span>
+                <span class="logo-text">CPU<span class="logo-accent">Forecast</span></span>
             </div>
             <nav class="header-nav">
                 <span class="nav-badge">MLOps Pipeline</span>
@@ -39,8 +39,8 @@
     <section id="hero">
         <div class="hero-content">
             <div class="hero-label">Cloud-Based MLOps System</div>
-            <h1>Electricity Consumption<br><span class="hero-highlight">Forecasting</span></h1>
-            <p class="hero-desc">Upload your power consumption dataset, trigger model retraining,<br>and get next-day electricity forecasts — all from one interface.</p>
+            <h1>CPU Utilization<br><span class="hero-highlight">Forecasting</span></h1>
+            <p class="hero-desc">Upload your CPU utilization dataset, trigger model retraining,<br>and get next-day CPU utilization forecasts — all from one interface.</p>
         </div>
     </section>
 
@@ -82,7 +82,7 @@
                     </div>
                     <div>
                         <h2>Upload Dataset</h2>
-                        <p class="panel-subtitle">Upload your hourly power consumption CSV file to S3</p>
+                        <p class="panel-subtitle">Upload your hourly CPU utilization CSV file to S3</p>
                     </div>
                 </div>
 
@@ -205,7 +205,7 @@
                     </div>
                     <div>
                         <h2>Forecast</h2>
-                        <p class="panel-subtitle">Send 24 hours of consumption data to get next-day predictions</p>
+                        <p class="panel-subtitle">Send 24 hours of CPU utilization data to get next-day predictions</p>
                     </div>
                 </div>
 
@@ -216,8 +216,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="forecast-data">Last 24 Hours — Power Consumption (comma-separated)</label>
-                        <textarea id="forecast-data" class="input-field textarea" rows="4" placeholder="e.g. 320.5, 310.2, 305.1, 298.7, 290.3, 285.6, 280.1, 310.4, 350.2, 380.5, 410.3, 420.7, 415.2, 400.8, 395.3, 380.1, 370.5, 390.2, 410.8, 430.1, 420.5, 400.3, 370.2, 340.8"></textarea>
+                        <label for="forecast-data">Last 24 Hours — CPU Utilization (comma-separated)</label>
+                        <textarea id="forecast-data" class="input-field textarea" rows="4" placeholder="e.g. 45.5, 46.2, 47.1, 50.7, 55.3, 60.6, 65.1, 70.4, 75.2, 80.5, 85.3, 82.7, 80.2, 75.8, 70.3, 65.1, 60.5, 55.2, 50.8, 48.1, 46.5, 45.3, 44.2, 45.8"></textarea>
                         <div class="input-hint">
                             <span id="value-count">0 / 24 values</span>
                         </div>
@@ -240,9 +240,9 @@
 
                     <div class="forecast-summary hidden" id="forecast-summary">
                         <div class="summary-card">
-                            <div class="summary-label">Total Next-Day Consumption</div>
+                            <div class="summary-label">Average Next-Day CPU Utilization</div>
                             <div class="summary-value" id="total-consumption">—</div>
-                            <div class="summary-unit">kWh (predicted)</div>
+                            <div class="summary-unit">% (predicted)</div>
                         </div>
                     </div>
 
@@ -266,7 +266,7 @@
     <!-- ─── FOOTER ─── -->
     <footer id="main-footer">
         <div class="footer-inner">
-            <p>PowerForecast MLOps Pipeline &middot; AWS EC2 &middot; S3 &middot; Lambda &middot; FastAPI</p>
+            <p>CPUForecast MLOps Pipeline &middot; AWS EC2 &middot; S3 &middot; Lambda &middot; FastAPI</p>
         </div>
     </footer>
 

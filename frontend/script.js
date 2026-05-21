@@ -73,11 +73,6 @@ let forecastChart  = null;
 /* ═══════════════════════════════════════════
    UTILITIES
    ═══════════════════════════════════════════ */
-function generateJobId() {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const seg = (len) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-    return `JOB-${seg(4)}-${seg(4)}-${seg(4)}`;
-}
 
 function formatBytes(bytes) {
     if (bytes < 1024) return bytes + " B";
@@ -117,14 +112,11 @@ function goToStep(step) {
     window.scrollTo({ top: $("#steps-section").offsetTop - 80, behavior: "smooth" });
 }
 
-// Allow clicking on completed / active steps
+// Allow free navigation between steps
 stepItems.forEach((item) => {
     item.addEventListener("click", () => {
         const target = parseInt(item.dataset.step);
-        // Only allow going back to completed steps or current
-        if (target <= currentStep) {
-            goToStep(target);
-        }
+        goToStep(target);
     });
 });
 
@@ -197,13 +189,12 @@ btnUpload.addEventListener("click", async () => {
 
         const data = await res.json();
 
-        // Generate job ID
-        generatedJobId = generateJobId();
+        // Use job ID from API response
+        generatedJobId = data.job_id;
 
-        // Build combined response
+        // Build combined response for display
         const combined = {
             ...data,
-            job_id: generatedJobId,
             timestamp: formatTimestamp(),
         };
 
@@ -358,7 +349,7 @@ function renderForecastChart(predictions) {
         data: {
             labels,
             datasets: [{
-                label: "Predicted Power (kWh)",
+                label: "Predicted CPU Utilization (%)",
                 data: predictions,
                 borderColor: "#ffffff",
                 backgroundColor: "rgba(255,255,255,0.05)",
@@ -387,7 +378,7 @@ function renderForecastChart(predictions) {
                     titleFont: { family: "'Inter', sans-serif", size: 12 },
                     bodyFont: { family: "'JetBrains Mono', monospace", size: 11 },
                     callbacks: {
-                        label: (ctx) => `  ${ctx.parsed.y.toFixed(2)} kWh`,
+                        label: (ctx) => `  ${ctx.parsed.y.toFixed(2)} %`,
                     },
                 },
             },
