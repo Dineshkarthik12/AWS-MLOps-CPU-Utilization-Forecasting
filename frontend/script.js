@@ -293,10 +293,14 @@ btnForecast.addEventListener("click", async () => {
     forecastChartCont.classList.add("hidden");
 
     try {
+        const jobId = forecastJobId.value.trim();
         const res = await fetch(`${API_BASE_FORECAST}/forecast`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ last_24_hours: values }),
+            body: JSON.stringify({ 
+                job_id: jobId,
+                last_24_hours: values 
+            }),
         });
 
         const data = await res.json();
