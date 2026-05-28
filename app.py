@@ -1,7 +1,10 @@
 from fastapi import FastAPI, UploadFile, File
 import boto3
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)
 
 BUCKET_NAME = "power-forecast-dinesh"
 

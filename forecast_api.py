@@ -6,8 +6,18 @@ from tensorflow.keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import os
+from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Gauge
 
 app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)
+
+# Custom metrics
+forecasted_consumption_gauge = Gauge(
+    "forecasted_total_next_day", 
+    "Predicted total CPU consumption for the next day"
+)
 
 BUCKET_NAME = "power-forecast-dinesh"
 
@@ -88,6 +98,9 @@ def forecast(data: ForecastInput):
     predictions_inv = scaler.inverse_transform(predictions)
 
     total_next_day = float(predictions_inv.sum())
+    
+    # Expose to Prometheus
+    forecasted_consumption_gauge.set(total_next_day)
 
     return {
         "predicted_next_24_hours": predictions_inv.flatten().tolist(),
