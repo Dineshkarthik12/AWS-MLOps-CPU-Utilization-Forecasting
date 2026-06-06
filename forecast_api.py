@@ -7,81 +7,95 @@ from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import os
 from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import Gauge
 
 app = FastAPI()
 
 Instrumentator().instrument(app).expose(app)
 
-# Custom metrics
-forecasted_consumption_gauge = Gauge(
-    "forecasted_total_next_day", 
-    "Predicted total CPU consumption for the next day"
-)
-
 BUCKET_NAME = "power-forecast-dinesh"
 
 s3 = boto3.client("s3")
 
-MODEL_FILE = "model.keras"
-BEST_FILE = "best_model.txt"
-DATA_FILE = "power_hourly.csv"
+# cache for loaded models
+model_cache = {}
+scaler_cache = {}
 
-model = None
-scaler = None
 
-# =========================
-# Load best model from S3
-# =========================
-def load_best_model():
-    global model, scaler
+class ForecastInput(BaseModel):
+    job_id: str
+    last_24_hours: list[float]
 
-    # Download best_model.txt
-    s3.download_file(BUCKET_NAME, "results/best_model.txt", BEST_FILE)
-    with open(BEST_FILE) as f:
+
+def load_model_from_s3(job_id):
+
+    # check cache first
+    if job_id in model_cache:
+        return model_cache[job_id], scaler_cache[job_id]
+
+    best_file = f"best_{job_id}.txt"
+    model_file = f"model_{job_id}.keras"
+    dataset_file = f"dataset_{job_id}.csv"
+
+    # download best model name
+    s3.download_file(
+        BUCKET_NAME,
+        f"results/{job_id}/best_model.txt",
+        best_file
+    )
+
+    with open(best_file) as f:
         best_model_name = f.read().strip()
 
-    # Download model
-    s3.download_file(BUCKET_NAME, f"models/{best_model_name}_model.keras", MODEL_FILE)
-    model = load_model(MODEL_FILE)
+    # download actual model
+    s3.download_file(
+        BUCKET_NAME,
+        f"models/{job_id}/{best_model_name}_model.keras",
+        model_file
+    )
 
-    # Download dataset to rebuild scaler
-    s3.download_file(BUCKET_NAME, "data/power_hourly.csv", DATA_FILE)
-    df = pd.read_csv(DATA_FILE)
+    model = load_model(model_file)
+
+    # download dataset to rebuild scaler
+    s3.download_file(
+        BUCKET_NAME,
+        f"datasets/{job_id}/power_hourly.csv",
+        dataset_file
+    )
+
+    df = pd.read_csv(dataset_file)
+
     df["consumption"] = pd.to_numeric(df["consumption"], errors="coerce")
     df = df.dropna()
 
     values = df["consumption"].values.reshape(-1, 1)
+
     scaler = MinMaxScaler()
     scaler.fit(values)
 
-    print("Best model loaded:", best_model_name)
+    # store in cache
+    model_cache[job_id] = model
+    scaler_cache[job_id] = scaler
+
+    return model, scaler
 
 
-@app.on_event("startup")
-def startup_event():
-    load_best_model()
+@app.get("/")
+def home():
+    return {"message": "Forecast API running"}
 
 
-# =========================
-# Input schema
-# =========================
-class ForecastInput(BaseModel):
-    last_24_hours: list[float]
-
-
-# =========================
-# Forecast endpoint
-# =========================
 @app.post("/forecast")
 def forecast(data: ForecastInput):
-    global model, scaler
 
     if len(data.last_24_hours) != 24:
         return {"error": "You must provide exactly 24 hourly values"}
 
-    # Scale input
+    job_id = data.job_id
+
+    model, scaler = load_model_from_s3(job_id)
+
     input_array = np.array(data.last_24_hours).reshape(-1, 1)
+
     scaled_input = scaler.transform(input_array)
 
     seq = scaled_input.reshape(1, 24, 1)
@@ -90,19 +104,19 @@ def forecast(data: ForecastInput):
 
     for _ in range(24):
         next_val = model.predict(seq, verbose=0)[0][0]
+
         predictions.append(next_val)
 
         seq = np.append(seq[:, 1:, :], [[[next_val]]], axis=1)
 
     predictions = np.array(predictions).reshape(-1, 1)
+
     predictions_inv = scaler.inverse_transform(predictions)
 
     total_next_day = float(predictions_inv.sum())
-    
-    # Expose to Prometheus
-    forecasted_consumption_gauge.set(total_next_day)
 
     return {
+        "job_id": job_id,
         "predicted_next_24_hours": predictions_inv.flatten().tolist(),
         "total_next_day_consumption": total_next_day
     }
